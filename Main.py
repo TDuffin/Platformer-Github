@@ -1,13 +1,14 @@
-#import dependencies and files
-import pygame
-from PIL import Image
-import math
+# import dependencies and files
+# import pygame
+# from PIL import Image
+# import math
 #from Settings import *
 from Player import *
 from MapObjects import *
+from MenuObjects import *
 
 # game version
-VERSION = "A_0.20"
+VERSION = "A_0.23"
 
 # Init pygame/mixer
 pygame.init()
@@ -21,17 +22,20 @@ class Game:
         self.spriteGroup = pygame.sprite.Group()
         self.obstacleGroup = pygame.sprite.Group()
         self.sprPlayer = None
-        self.gameLoop()
+
+        self.mainMenu()
+
 
     def loadLevel(self,level):
-
+        self.spriteGroup.empty()
         # buildList = []
         lvlWidth, lvlHeight = level.size
         # load list called pixels with RGB data from image file
         pixels = list(level.getdata())
 
         i = 0
-        while (i < lvlWidth * lvlHeight - 1):
+        #while (i < lvlWidth * lvlHeight - 1):
+        for i in range (0, lvlWidth*lvlHeight-1):
             i += 1
 
             if pixels[i] in obstaclePixels:
@@ -47,8 +51,8 @@ class Game:
         self.spriteGroup.add(self.sprPlayer)
 
 # Game loop
-    def gameLoop(self):
-        self.loadLevel(imgMAP)
+    def gameLoop(self, level):
+        self.loadLevel(level)
     
         running = True
         while running:
@@ -82,9 +86,61 @@ class Game:
             self.spriteGroup.draw(self.screen)
     
             self.clock.tick(FPS)
-            pygame.display.flip()    
-        pygame.quit()
-        exit()
+            pygame.display.flip()
+
+    def mainMenu(self):
+
+        # self.objectList = []
+
+        btnPlay = Button((WIDTH/2,100),(100,60),"Hello!",GREEN,self.spriteGroup)
+        # btnNew  =
+        # btnLoad =
+        # btnExit =
+        startGame = False
+        running = True
+
+        while running:
+
+            # loop events
+            for event in pygame.event.get():
+                # if closed, quid
+                if event.type == pygame.QUIT:
+                    running = False
+                # if clicked, check if button is clicked, then run
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for objects in self.spriteGroup:
+                        if objects.ifHovered():
+                            #objects.clicked(self)
+                            running = False
+                            startGame = True
+                            # update points txtbox
+                            #strPOINTS.changeText("Points Left: " + str(points))
+                            break
+            # background
+            self.screen.fill(WHITE)
+
+            # update all objects on screen
+            self.spriteGroup.update()
+            self.spriteGroup.draw(self.screen)
+
+            # update screen
+            self.clock.tick(FPS)
+            pygame.display.flip()
+
+        if startGame == True:
+            self.gameLoop(imgMAP)
+
+
+
+
+
+
+
+
+
 
 game = Game()
-game.__init__()
+
+pygame.quit()
+exit()
+#game.__init__()

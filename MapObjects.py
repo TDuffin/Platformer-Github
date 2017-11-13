@@ -68,12 +68,8 @@ class Block(Obstacle):
             player.yVel = 0
         elif sideCollided == "left":
             player.rect.right = self.rect.left
-
-        #player.jumpsLeft = MAXJUMPS
         elif sideCollided == "right":
-            player.rect.left = self.rect.right  # stop moving into the block!
-            if pygame.Rect.collidepoint(self.rect,self.x+10, self.y-1):
-                print("box above it")
+            player.rect.left = self.rect.right
 
 
 
@@ -116,11 +112,11 @@ class Goal(Obstacle):
 
 
 obstaclePixels = {
-    RED:Platform,
-    BLUE:Block,
-    MAGENTA:Coin,
-    GREEN:Start,
-    YELLOW:Goal,
+    RED: Platform,
+    BLUE: Block,
+    MAGENTA: Coin,
+    GREEN: Start,
+    YELLOW: Goal,
 }
 
 # def createObstacle(spriteGroup, obstacleGroup,x,y):

@@ -7,15 +7,16 @@ FPS = 60
 SCALE = 2
 
 #Colours
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED =   (255, 0, 0)
-BLUE =  (0, 0, 255)
-GREEN = (0, 255, 0)
-YELLOW =(255, 255, 0)
-CYAN =  (0,255,255)
-MAGENTA=(255, 0, 255)
-GREY =  (166, 166, 166)
+BLACK   = (0, 0, 0)
+WHITE   = (255, 255, 255)
+RED     = (255, 0, 0)
+BLUE    = (0, 0, 255)
+GREEN   = (0, 255, 0)
+YELLOW  = (255, 255, 0)
+CYAN    = (0,255,255)
+MAGENTA = (255, 0, 255)
+GREY    = (166, 166, 166)
+DARKRED = (180, 0, 0)
 
 #Controls
 CONTROLS = {
