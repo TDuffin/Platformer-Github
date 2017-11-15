@@ -111,7 +111,7 @@ class Goal(Obstacle):
 ###
 
 
-obstaclePixels = {
+obstacle_pixels = {
     RED: Platform,
     BLUE: Block,
     MAGENTA: Coin,

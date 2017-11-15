@@ -21,28 +21,22 @@ class Player(pygame.sprite.Sprite):
     def update(self,obstacles):
         if self.yVel < self.maxYVel:
             self.yVel += GRAVITY
-
-        # if self.rect.bottom + self.yVel > HEIGHT:
-        #     #self.yVel = 0
-        #     self.rect.center =(WIDTH/2,0)
-        #     #self.rect.bottom = HEIGHT
-
         self.rect.x += self.xVel
         self.collisionCheck(obstacles,0,False)
         self.rect.y += self.yVel
         self.collisionCheck(obstacles,1,self.fallThrough)
 
     def control(self,control,modifier):
+        #keys = pygame.mouse.get_pressed()
         self.fallThrough = False
-        if control == "SPACE" and modifier == 1 and self.jumpsLeft > 0:
+        if control == "JUMP" and modifier == 1 and self.jumpsLeft > 0:
             self.yVel = -JUMPHEIGHT
             self.jumpsLeft -= 1
-        elif control == "D":
-
+        elif control == "RIGHT":
             self.xVel += RUNSPEED * modifier
-        elif control == "A":
+        elif control == "LEFT":
             self.xVel -= RUNSPEED * modifier
-        elif control == "S" and modifier == 1:
+        elif control == "FALL" and modifier == 1:
             self.fallThrough = True
 
     # 0 for x axis col.check, 1 for y axis col.check

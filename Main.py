@@ -1,146 +1,328 @@
-# import dependencies and files
-# import pygame
-# from PIL import Image
-# import math
-#from Settings import *
-from Player import *
-from MapObjects import *
+# Untitled Platformer Game
+# Year One, Term 1 Project
+# Thomas-Luke Duffin, N0727751
+import sys
+import pygame as pg
+from Settings import *
 from MenuObjects import *
+from Textures import *
+from MapObjects import *
+from Player import *
 
-# game version
-VERSION = "A_0.23"
+    
+class Game(object):
+    # The game and its states are controlled through this class. Events are also handled here.
+    def __init__(self, screen, states, start_state):
+        """
+        Initialize the Game object.
+        
+        screen: the pygame display surface
+        states: a dict mapping state-names to GameState objects
+        start_state: name of the first active game state 
+        """
 
-# Init pygame/mixer
-pygame.init()
-pygame.mixer.init()
+        self.done = False
+        self.screen = screen
+        self.clock = pg.time.Clock()
+        self.fps = 60
+        self.states = states
+        self.state_name = start_state
+        self.state = self.states[self.state_name]()
 
-class Game:
+
+        
+    def event_loop(self):
+        """Events are passed for handling to the current state."""
+        for event in pg.event.get():
+            self.state.get_event(event)
+            
+    def flip_state(self):
+        """Switch to the next game state."""
+        current_state = self.state_name
+        print("CURRENT:",current_state)
+        next_state = self.state.next_state
+        print("NEXT:",next_state)
+        self.state.done = False
+        self.state_name = next_state
+        persistent = self.state.persist
+        #print("PERSISTENT:",persistent)
+
+        self.state = self.states[self.state_name]()
+        self.state.startup(persistent)
+    
+    def update(self, dt):
+        """
+        Check for state flip and update active state.
+        
+        dt: milliseconds since last frame
+        """
+        if self.state.quit:
+            self.done = True
+        elif self.state.done:
+            self.flip_state()    
+        self.state.update(dt)
+        
+    def draw(self):
+        """Pass display surface to active state for drawing."""
+        # for sprite_list in self.persist["sprite_list"]:
+        #     sprite_list.update()
+        #     sprite_list.draw(self.screen)
+        self.state.draw(self.screen)
+        
+    def run(self):
+        """
+        Pretty much the entirety of the game's runtime will be
+        spent inside this while loop.
+        """ 
+        while not self.done:
+            dt = self.clock.tick(self.fps)
+            self.event_loop()
+            self.update(dt)
+            self.draw()
+            pg.display.update()
+            
+            
+class GameState(object):
+    """
+    Parent class for individual game states to inherit from. 
+    """
     def __init__(self):
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Platformer:" + VERSION)
-        self.clock = pygame.time.Clock()
-        self.spriteGroup = pygame.sprite.Group()
-        self.obstacleGroup = pygame.sprite.Group()
-        self.sprPlayer = None
+        self.done = False
+        self.quit = False
+        self.next_state = None
+        self.screen_rect = pg.display.get_surface().get_rect()
+        self.screen_surf = pg.display.get_surface()
+        self.persist = {}
+        self.font = pg.font.Font(None, 24)
+        self.sprite_group = pg.sprite.Group()
+        self.persist["sprite_group"] = self.sprite_group
 
-        self.mainMenu()
+
+    def startup(self, persistent):
+        # Called when a state resumes being active.
+        # Allows information to be passed between states.
+        # persistent: a dict passed from state to state
+        self.persist = persistent
 
 
-    def loadLevel(self,level):
-        self.spriteGroup.empty()
-        # buildList = []
-        lvlWidth, lvlHeight = level.size
+
+    def get_event(self, event):
+        # Handle a single event passed by the Game object.
+        pass
+
+    def update(self, dt):
+        # Update the state. Called by the Game object once per frame.
+        # dt: time since last frame
+        pass
+        
+    def draw(self, surface):
+        # Draw everything to the screen.
+        pass
+        
+        
+class MainMenu(GameState):
+    def __init__(self):
+        super(MainMenu, self).__init__()
+        self.sprite_group.empty()
+        self.title = self.font.render("Splash Screen", True, pg.Color("dodgerblue"))
+        self.title_rect = self.title.get_rect(center=self.screen_rect.center)
+        #self, position, size, text, colour, sprite_group
+
+
+        # Buttons/UI elements
+        self.new_button = Button((WIDTH/2, 50), (100, 40), "NEW", pg.Color("dodgerblue"), self.sprite_group, "LEVELLOAD")
+        self.load_button = Button((WIDTH/2, 150), (100, 40), "LOAD", pg.Color("dodgerblue"), self.sprite_group, "SAVESELECT")
+        self.exit_button = Button((WIDTH/2, 250), (100, 40), "EXIT", pg.Color("dodgerblue"), self.sprite_group, "EXIT")
+
+        # Setting attribs from global dict.
+        self.persist["screen_color"] = "grey"
+
+
+        # Next state
+        self.next_state = "GAMEPLAY"
+        
+    def get_event(self, event):
+        if event.type == pg.QUIT:
+            self.quit = True
+        # elif event.type == pg.KEYDOWN:
+        #     self.persist["screen_color"] = "gold"
+        #     self.done = True
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            for sprite in self.sprite_group:
+                if sprite.ifHovered():
+                    self.next_state = sprite.clicked()
+                    self.persist["screen_color"] = "grey"
+                    self.done = True
+
+
+    
+    def draw(self, surface):
+        surface.fill(pg.Color("grey"))
+        #surface.blit(self.title, self.title_rect)
+        self.sprite_group.update()
+        self.sprite_group.draw(surface)
+
+
+
+    
+    
+class Gameplay(GameState):
+    def __init__(self):
+        super(Gameplay, self).__init__()
+
+        
+    def startup(self, persistent):
+        self.persist = persistent
+        print(self.persist)
+        color = self.persist["screen_color"]
+        self.screen_color = pg.Color(color)
+        self.player = self.persist["player"]
+        self.obstacle_group = self.persist["obstacle_group"]
+        self.sprite_group = self.persist["sprite_group"]
+        self.next_state = None
+
+        
+    def get_event(self, event):
+        #print(event)
+        if event.type == pg.QUIT:
+            self.quit = True
+        if event.type == pygame.KEYDOWN:
+            if event.key in CONTROLS:
+                # send player control to player object
+                self.player.control(CONTROLS[event.key], 1)
+            elif event.key == pygame.K_ESCAPE:
+                self.quit = True
+        if event.type == pygame.KEYUP:
+            if event.key in CONTROLS:
+                self.player.control(CONTROLS[event.key], -1)
+                
+    def update(self, dt):
+        if (self.player.rect.left > WIDTH * 0.7 and self.player.xVel > 0) or (
+                self.player.rect.right < WIDTH * 0.3 and self.player.xVel < 0):
+            for obstacle in self.sprite_group:
+                obstacle.rect.left -= int(self.player.xVel)
+
+        self.obstacle_group.update()
+        self.player.update(self.obstacle_group)
+        #print(self.player.rect.center)
+        # self.rect.move_ip(self.x_velocity, 0)
+        # if (self.rect.right > self.screen_rect.right
+        #     or self.rect.left < self.screen_rect.left):
+        #     self.x_velocity *= -1
+        #     self.rect.clamp_ip(self.screen_rect)
+                 
+    def draw(self, surface):
+        surface.fill(self.screen_color)
+        self.sprite_group.draw(surface)
+        # surface.blit(self.title, self.title_rect)
+        # pg.draw.rect(surface, pg.Color("darkgreen"), self.rect)
+
+
+class SaveSelect(GameState):
+    def __init__(self):
+        pass
+
+    def startup(self, persistent):
+        pass
+
+    def get_event(self, event):
+        pass
+
+    def update(self, dt):
+        pass
+
+    def draw(self, surface):
+        pass
+
+
+class LevelLoad(GameState):
+    def __init__(self):
+        super(LevelLoad,self).__init__()
+
+    def startup(self,persistent):
+        level = imgMAP
+        self.persist = persistent
+        self.obstacle_group = pygame.sprite.Group()
+        self.persist["obstacle_group"] = self.obstacle_group
+
+        self.obstacle_group.empty()
+        self.sprite_group.empty()
+
+        lvl_width, lvl_height = level.size
         # load list called pixels with RGB data from image file
         pixels = list(level.getdata())
 
         i = 0
-        #while (i < lvlWidth * lvlHeight - 1):
-        for i in range (0, lvlWidth*lvlHeight-1):
-            i += 1
 
-            if pixels[i] in obstaclePixels:
-                y, x = divmod(i, lvlWidth)
-                newObstacle = obstaclePixels[pixels[i]](x*20, y*20)
-                self.obstacleGroup.add(newObstacle)
-                self.spriteGroup.add(newObstacle)
+        for i in range(0, lvl_width * lvl_height - 1):
+            i += 1
+            if pixels[i] in obstacle_pixels:
+                y, x = divmod(i, lvl_width)
+                new_obstacle = obstacle_pixels[pixels[i]](x * 20, y * 20)
+                self.obstacle_group.add(new_obstacle)
+                self.sprite_group.add(new_obstacle)
 
                 if pixels[i] == GREEN:
-                    startPos = (x*20, y*20)
+                    startPos = (x * 20, y * 20)
 
-        self.sprPlayer = Player(startPos)
-        self.spriteGroup.add(self.sprPlayer)
+        player = Player(startPos)
+        self.sprite_group.add(player)
 
-# Game loop
-    def gameLoop(self, level):
-        self.loadLevel(level)
+        # Load sprite groups to the persist dictionary so that they're overwritten
+        self.persist["player"] = player
+        self.persist["sprite_group"]=self.sprite_group
+
+        # After loading the level, the next state will always be GAMEPLAY, Then end the instance
+        self.next_state = "GAMEPLAY"
+        self.done = True
+
+
+class LevelSelect(GameState):
+    pass
+
+
+class LevelIntro(GameState):
+    pass
+
+
+class LevelPause(GameState):
+    pass
+
+
+class EndLevel(GameState):
+    pass
+
+
+# Exits the game by immediately setting the "quit" variable to true
+class Exit(GameState):
+    def __init__(self):
+        super(Exit, self).__init__()
+        self.quit = True
+
+
+
+
+if __name__ == "__main__":
+    pg.init()
+    screen = pg.display.set_mode((WIDTH, HEIGHT))
+    pg.display.set_caption("Platformer " + VERSION)
     
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key in CONTROLS:
-                        #send player control to player object
-                        self.sprPlayer.control(CONTROLS[event.key], 1)
-                    elif event.key == pygame.K_ESCAPE:
-                        running = False
-                if event.type == pygame.KEYUP:
-                    if event.key in CONTROLS:
-                        self.sprPlayer.control(CONTROLS[event.key], -1)
-
-
-            # side scrolling!
-            if (self.sprPlayer.rect.left > WIDTH * 0.7 and self.sprPlayer.xVel > 0) or (self.sprPlayer.rect.right < WIDTH * 0.3 and self.sprPlayer.xVel < 0):
-                for obstacle in self.spriteGroup:
-                    obstacle.rect.left -= int(self.sprPlayer.xVel)
-
-            # if (self.sprPlayer.rect.top < HEIGHT*0.2 and self.sprPlayer.yVel < 0)or(self.sprPlayer.rect.bottom > HEIGHT*0.6 and se lf.sprPlayer.yVel > 0):
-            #     for obstacle in self.spriteGroup:
-            #         obstacle.rect.top -= int(self.sprPlayer.yVel)
-
-            self.obstacleGroup.update()
-            self.sprPlayer.update(self.obstacleGroup)
+    # Dictionary stores instance of every game state to be switched to during runtime. 
+    states = {
+        "MAINMENU": MainMenu,
+        "GAMEPLAY": Gameplay,
+        "SAVESELECT": SaveSelect,
+        "LEVELLOAD": LevelLoad,
+        "LEVELSELECT": LevelSelect,
+        "LEVELINTRO": LevelIntro,
+        "LEVELPAUSE": LevelPause,
+        "ENDLEVEL": EndLevel,
+        "EXIT": Exit,
+        
+    }
     
-            self.screen.fill(GREY)
-            self.spriteGroup.draw(self.screen)
-    
-            self.clock.tick(FPS)
-            pygame.display.flip()
-
-    def mainMenu(self):
-
-        # self.objectList = []
-
-        btnPlay = Button((WIDTH/2,100),(100,60),"Hello!",GREEN,self.spriteGroup)
-        # btnNew  =
-        # btnLoad =
-        # btnExit =
-        startGame = False
-        running = True
-
-        while running:
-
-            # loop events
-            for event in pygame.event.get():
-                # if closed, quid
-                if event.type == pygame.QUIT:
-                    running = False
-                # if clicked, check if button is clicked, then run
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    for objects in self.spriteGroup:
-                        if objects.ifHovered():
-                            #objects.clicked(self)
-                            running = False
-                            startGame = True
-                            # update points txtbox
-                            #strPOINTS.changeText("Points Left: " + str(points))
-                            break
-            # background
-            self.screen.fill(WHITE)
-
-            # update all objects on screen
-            self.spriteGroup.update()
-            self.spriteGroup.draw(self.screen)
-
-            # update screen
-            self.clock.tick(FPS)
-            pygame.display.flip()
-
-        if startGame == True:
-            self.gameLoop(imgMAP)
-
-
-
-
-
-
-
-
-
-
-game = Game()
-
-pygame.quit()
-exit()
-#game.__init__()
+    # Create instance of the Game class, setting its initial state to the Main Menu
+    game = Game(screen, states, "MAINMENU")
+    game.run()
+    pg.quit()
+    sys.exit()

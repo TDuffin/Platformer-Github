@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Platformer Rewrite.iml" filepath="$PROJECT_DIR$/.idea/Platformer Rewrite.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/FSM Plat.iml" filepath="$PROJECT_DIR$/.idea/FSM Plat.iml" />
     </modules>
   </component>
 </project>

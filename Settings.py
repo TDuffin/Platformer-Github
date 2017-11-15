@@ -1,10 +1,12 @@
 import pygame
 
+VERSION = "A_0.30"
+
 #Screen
 WIDTH = 800
 HEIGHT = 600
 FPS = 60
-SCALE = 2
+#SCALE = 2
 
 #Colours
 BLACK   = (0, 0, 0)
@@ -19,11 +21,19 @@ GREY    = (166, 166, 166)
 DARKRED = (180, 0, 0)
 
 #Controls
+# CONTROLS = {
+#     "JUMP":     pygame.K_SPACE,
+#     "LEFT":     pygame.K_a,
+#     "RIGHT":    pygame.K_d,
+#     "FALL":     pygame.K_s,
+# }
+
 CONTROLS = {
-    pygame.K_SPACE: "SPACE",
-    pygame.K_a: "A",
-    pygame.K_d: "D",
-    pygame.K_s: "S",
+    pygame.K_SPACE: "JUMP",
+    pygame.K_a: "LEFT",
+    pygame.K_d: "RIGHT",
+    pygame.K_s: "FALL",
+
 }
 
 #Player Constants
