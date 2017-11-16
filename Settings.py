@@ -1,6 +1,10 @@
-import pygame
+import pygame as pg
 
+# Current version of our game
 VERSION = "A_0.30"
+
+# Pygame Vectors
+vector = pg.math.Vector2()
 
 #Screen
 WIDTH = 800
@@ -22,23 +26,28 @@ DARKRED = (180, 0, 0)
 
 #Controls
 # CONTROLS = {
-#     "JUMP":     pygame.K_SPACE,
-#     "LEFT":     pygame.K_a,
-#     "RIGHT":    pygame.K_d,
-#     "FALL":     pygame.K_s,
+#     "JUMP":     pg.K_SPACE,
+#     "LEFT":     pg.K_a,
+#     "RIGHT":    pg.K_d,
+#     "FALL":     pg.K_s,
 # }
 
 CONTROLS = {
-    pygame.K_SPACE: "JUMP",
-    pygame.K_a: "LEFT",
-    pygame.K_d: "RIGHT",
-    pygame.K_s: "FALL",
+    pg.K_SPACE: "JUMP",
+    pg.K_a: "LEFT",
+    pg.K_d: "RIGHT",
+    pg.K_s: "FALL",
 
 }
 
 #Player Constants
-GRAVITY = 1.8
+GRAVITY = 1.3
 RUNSPEED = 7
-JUMPHEIGHT = 20
+JUMPHEIGHT = 18
 MAXFALLSPEED = 20
 MAXJUMPS = 2
+
+# RUNSPEED_V = ()
+# JUMPSPEED_V = ()
+# GRAVITY_V = ()
+# MAXFALLSPEED_V = ()

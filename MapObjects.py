@@ -5,14 +5,14 @@ SCORE = 0
 
 
 # all objects on the map
-class Obstacle(pygame.sprite.Sprite):
+class Obstacle(pg.sprite.Sprite):
 
     def __init__(self,x,y,image):
-        pygame.sprite.Sprite.__init__(self)
+        pg.sprite.Sprite.__init__(self)
         self.x = x
         self.y = y
         self.image = image
-        self.image = pygame.transform.scale(self.image, (20, 20))
+        self.image = pg.transform.scale(self.image, (20, 20))
         self.rect = self.image.get_rect()
         self.rect.topleft = (self.x,self.y)
 
@@ -36,7 +36,7 @@ class Obstacle(pygame.sprite.Sprite):
 # objects below inherit from Obstacle
 # platform object
 class Platform(Obstacle):
-    texture = pygame.image.load(imgPLATFORM)
+    texture = pg.image.load(imgPLATFORM)
 
     def __init__(self,x,y):
         Obstacle.__init__(self,x,y,self.texture)
@@ -52,7 +52,7 @@ class Platform(Obstacle):
 
 # block object
 class Block(Obstacle):
-    texture = pygame.image.load(imgBLOCK)
+    texture = pg.image.load(imgBLOCK)
 
     def __init__(self,x,y):
         Obstacle.__init__(self,x,y,self.texture)
@@ -74,7 +74,7 @@ class Block(Obstacle):
 
 
 class Coin(Obstacle):
-    texture = pygame.image.load(imgCOIN)
+    texture = pg.image.load(imgCOIN)
 
     def __init__(self,x,y):
         Obstacle.__init__(self,x,y,self.texture)
@@ -82,30 +82,30 @@ class Coin(Obstacle):
     def collisionBehaviour(self,player,axis,fallThrough):
         #ignore WHERE it collided, just run collision code
         print("collision with coin")
-        pygame.sprite.Sprite.kill(self)
+        pg.sprite.Sprite.kill(self)
         global SCORE
         SCORE += 1
         print (SCORE)
 
 
 class Start(Obstacle):
-    texture = pygame.image.load(imgSTART)
+    texture = pg.image.load(imgSTART)
 
     def __init__(self, x, y):
         Obstacle.__init__(self, x, y, self.texture)
 
     def collisionBehaviour(self, player, axis, fallthrough):
-        pygame.sprite.Sprite.kill(self)
+        pg.sprite.Sprite.kill(self)
 
 
 class Goal(Obstacle):
-    texture = pygame.image.load(imgFLAG)
+    texture = pg.image.load(imgFLAG)
 
     def __init__(self, x, y):
         Obstacle.__init__(self, x, y, self.texture)
 
     def collisionBehaviour(self, player, axis, fallThrough):
-        pygame.sprite.Sprite.kill(self)
+        pg.sprite.Sprite.kill(self)
         print("GOAL")
 
 ###

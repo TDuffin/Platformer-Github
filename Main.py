@@ -16,7 +16,7 @@ class Game(object):
         """
         Initialize the Game object.
         
-        screen: the pygame display surface
+        screen: the pg display surface
         states: a dict mapping state-names to GameState objects
         start_state: name of the first active game state 
         """
@@ -130,9 +130,9 @@ class MainMenu(GameState):
 
 
         # Buttons/UI elements
-        self.new_button = Button((WIDTH/2, 50), (100, 40), "NEW", pg.Color("dodgerblue"), self.sprite_group, "LEVELLOAD")
-        self.load_button = Button((WIDTH/2, 150), (100, 40), "LOAD", pg.Color("dodgerblue"), self.sprite_group, "SAVESELECT")
-        self.exit_button = Button((WIDTH/2, 250), (100, 40), "EXIT", pg.Color("dodgerblue"), self.sprite_group, "EXIT")
+        self.new_button = Button((WIDTH/2, 200), (100, 40), "NEW", pg.Color("dodgerblue"), self.sprite_group, "LEVELLOAD")
+        self.load_button = Button((WIDTH/2, 300), (100, 40), "LOAD", pg.Color("dodgerblue"), self.sprite_group, "SAVESELECT")
+        self.exit_button = Button((WIDTH/2, 400), (100, 40), "EXIT", pg.Color("dodgerblue"), self.sprite_group, "EXIT")
 
         # Setting attribs from global dict.
         self.persist["screen_color"] = "grey"
@@ -186,13 +186,13 @@ class Gameplay(GameState):
         #print(event)
         if event.type == pg.QUIT:
             self.quit = True
-        if event.type == pygame.KEYDOWN:
+        if event.type == pg.KEYDOWN:
             if event.key in CONTROLS:
                 # send player control to player object
                 self.player.control(CONTROLS[event.key], 1)
-            elif event.key == pygame.K_ESCAPE:
+            elif event.key == pg.K_ESCAPE:
                 self.quit = True
-        if event.type == pygame.KEYUP:
+        if event.type == pg.KEYUP:
             if event.key in CONTROLS:
                 self.player.control(CONTROLS[event.key], -1)
                 
@@ -242,7 +242,7 @@ class LevelLoad(GameState):
     def startup(self,persistent):
         level = imgMAP
         self.persist = persistent
-        self.obstacle_group = pygame.sprite.Group()
+        self.obstacle_group = pg.sprite.Group()
         self.persist["obstacle_group"] = self.obstacle_group
 
         self.obstacle_group.empty()

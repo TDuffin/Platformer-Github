@@ -7,5 +7,5 @@ imgFLAG     = "flag.png"
 imgCOIN     = "coin.png"
 imgSTART    = "start.png"
 
-imgMAP = Image.open("map2.png", 'r')
+imgMAP = Image.open("map3.png", 'r')
 

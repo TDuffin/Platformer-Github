@@ -3,7 +3,7 @@ from Textures import *
 
 
 # Player Class
-class Player(pygame.sprite.Sprite):
+class Player(pg.sprite.Sprite):
     jumpsLeft = MAXJUMPS
     yVel = 0
     xVel = 0
@@ -12,9 +12,9 @@ class Player(pygame.sprite.Sprite):
     fallThrough = False
 
     def __init__(self,startPos):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(imgPLAYER)
-        self.image = pygame.transform.scale(self.image, (20, 20))
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.image.load(imgPLAYER)
+        self.image = pg.transform.scale(self.image, (20, 20))
         self.rect = self.image.get_rect()
         self.rect.topleft = startPos
 
@@ -27,7 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.collisionCheck(obstacles,1,self.fallThrough)
 
     def control(self,control,modifier):
-        #keys = pygame.mouse.get_pressed()
+        #keys = pg.mouse.get_pressed()
         self.fallThrough = False
         if control == "JUMP" and modifier == 1 and self.jumpsLeft > 0:
             self.yVel = -JUMPHEIGHT
@@ -41,7 +41,7 @@ class Player(pygame.sprite.Sprite):
 
     # 0 for x axis col.check, 1 for y axis col.check
     def collisionCheck(self,group,axis,fallThrough):
-        collisions = pygame.sprite.spritecollide(self,group,False)
+        collisions = pg.sprite.spritecollide(self,group,False)
 
         for objects in collisions:
             objects.collisionBehaviour(self,axis,fallThrough)
