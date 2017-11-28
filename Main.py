@@ -124,15 +124,17 @@ class MainMenu(GameState):
     def __init__(self):
         super(MainMenu, self).__init__()
         self.sprite_group.empty()
-        self.title = self.font.render("Splash Screen", True, pg.Color("dodgerblue"))
-        self.title_rect = self.title.get_rect(center=self.screen_rect.center)
-        #self, position, size, text, colour, sprite_group
+        # self.title = self.font.render("Splash Screen", True, pg.Color("dodgerblue"))
+        # self.title_rect = self.title.get_rect(center=self.screen_rect.center)
+        # self, position, size, text, colour, sprite_group
+        # self, position, size, text_size, text, sprite_group
 
 
         # Buttons/UI elements
         self.new_button = Button((WIDTH/2, 200), (100, 40), "NEW", pg.Color("dodgerblue"), self.sprite_group, "LEVELLOAD")
         self.load_button = Button((WIDTH/2, 300), (100, 40), "LOAD", pg.Color("dodgerblue"), self.sprite_group, "SAVESELECT")
         self.exit_button = Button((WIDTH/2, 400), (100, 40), "EXIT", pg.Color("dodgerblue"), self.sprite_group, "EXIT")
+        # self.title = ((WIDTH/2, 20), (100,100), 20, "GAME", self.sprite_group)
 
         # Setting attribs from global dict.
         self.persist["screen_color"] = "grey"
@@ -210,6 +212,8 @@ class Gameplay(GameState):
         #     or self.rect.left < self.screen_rect.left):
         #     self.x_velocity *= -1
         #     self.rect.clamp_ip(self.screen_rect)
+        if dt > 17:
+            print(dt)
                  
     def draw(self, surface):
         surface.fill(self.screen_color)
@@ -274,14 +278,27 @@ class LevelLoad(GameState):
 
         # After loading the level, the next state will always be GAMEPLAY, Then end the instance
         self.next_state = "GAMEPLAY"
+        # Set next state to INTRO when Intro is made
         self.done = True
 
 
 class LevelSelect(GameState):
+    def startup(self,persistent):
+        #level = imgMAP
+        self.persist = persistent
+        self.obstacle_group = pg.sprite.Group()
+        self.persist["obstacle_group"] = self.obstacle_group
+        self.overlay_group = pg.sprite.Group()
+
+        # DONT empty the sprite groups!
+        # self.obstacle_group.empty()
+        # self.sprite_group.empty()
     pass
 
 
 class LevelIntro(GameState):
+    def __init__(self):
+        super(LevelIntro,self).__init__()
     pass
 
 
