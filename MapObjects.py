@@ -1,7 +1,6 @@
 from Settings import *
 from Textures import *
-
-SCORE = 0
+from Score import *
 
 
 # all objects on the map
@@ -32,6 +31,7 @@ class Obstacle(pg.sprite.Sprite):
                 return "top"
             if player.rect.bottom - player.yVel > self.rect.bottom:
                 return "bottom"
+
 
 # objects below inherit from Obstacle
 # platform object
@@ -72,7 +72,6 @@ class Block(Obstacle):
             player.rect.left = self.rect.right
 
 
-
 class Coin(Obstacle):
     texture = pg.image.load(imgCOIN)
 
@@ -83,9 +82,7 @@ class Coin(Obstacle):
         #ignore WHERE it collided, just run collision code
         print("collision with coin")
         pg.sprite.Sprite.kill(self)
-        global SCORE
-        SCORE += 1
-        print (SCORE)
+        PERSISTENT["coin_collected"] = True
 
 
 class Start(Obstacle):
@@ -106,7 +103,9 @@ class Goal(Obstacle):
 
     def collisionBehaviour(self, player, axis, fallThrough):
         pg.sprite.Sprite.kill(self)
+
         print("GOAL")
+        PERSISTENT["level_complete"] = True
 
 ###
 

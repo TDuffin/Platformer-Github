@@ -8,7 +8,7 @@ from MenuObjects import *
 from Textures import *
 from MapObjects import *
 from Player import *
-
+from Score import *
     
 class Game(object):
     # The game and its states are controlled through this class. Events are also handled here.
@@ -124,65 +124,66 @@ class MainMenu(GameState):
     def __init__(self):
         super(MainMenu, self).__init__()
         self.sprite_group.empty()
-        # self.title = self.font.render("Splash Screen", True, pg.Color("dodgerblue"))
-        # self.title_rect = self.title.get_rect(center=self.screen_rect.center)
-        # self, position, size, text, colour, sprite_group
-        # self, position, size, text_size, text, sprite_group
-
+        self.button_group = pg.sprite.Group()
+        #self.title = self.font.render("Splash Screen", True, pg.Color("dodgerblue"))
+        #self.title_rect = self.title.get_rect(center=self.screen_rect.center)
+        #self, position, size, text, colour, sprite_group
 
         # Buttons/UI elements
         self.new_button = Button((WIDTH/2, 200), (100, 40), "NEW", pg.Color("dodgerblue"), self.sprite_group, "LEVELLOAD")
         self.load_button = Button((WIDTH/2, 300), (100, 40), "LOAD", pg.Color("dodgerblue"), self.sprite_group, "SAVESELECT")
         self.exit_button = Button((WIDTH/2, 400), (100, 40), "EXIT", pg.Color("dodgerblue"), self.sprite_group, "EXIT")
-        # self.title = ((WIDTH/2, 20), (100,100), 20, "GAME", self.sprite_group)
 
+        for sprite in self.sprite_group:
+            self.button_group.add(sprite)
+
+        self.title_label = Text((WIDTH/2,60),"Platformer ver: " + VERSION,50,pg.Color("grey"),self.sprite_group)
         # Setting attribs from global dict.
         self.persist["screen_color"] = "grey"
 
 
         # Next state
-        self.next_state = "GAMEPLAY"
+        self.persist["next_level"] = 1
+
+        # self.next_state = "GAMEPLAY"
         
     def get_event(self, event):
         if event.type == pg.QUIT:
             self.quit = True
-        # elif event.type == pg.KEYDOWN:
-        #     self.persist["screen_color"] = "gold"
-        #     self.done = True
         elif event.type == pg.MOUSEBUTTONDOWN:
-            for sprite in self.sprite_group:
-                if sprite.ifHovered():
+            for sprite in self.button_group:
+                if sprite.if_hovered():
                     self.next_state = sprite.clicked()
                     self.persist["screen_color"] = "grey"
                     self.done = True
 
-
-    
     def draw(self, surface):
         surface.fill(pg.Color("grey"))
-        #surface.blit(self.title, self.title_rect)
         self.sprite_group.update()
         self.sprite_group.draw(surface)
 
-
-
-    
     
 class Gameplay(GameState):
     def __init__(self):
         super(Gameplay, self).__init__()
 
-        
     def startup(self, persistent):
+        PERSISTENT["level_complete"] = False
         self.persist = persistent
-        print(self.persist)
         color = self.persist["screen_color"]
         self.screen_color = pg.Color(color)
         self.player = self.persist["player"]
         self.obstacle_group = self.persist["obstacle_group"]
         self.sprite_group = self.persist["sprite_group"]
-        self.next_state = None
+        self.display_group = pg.sprite.Group()
+        self.next_state = "LEVELLOAD"
 
+        #SCORE
+        self.level_score = Score()
+
+        #HUD/UI Elements
+        self.version_label = Text((45,10),"ver: " + VERSION,20,self.screen_color,self.display_group)
+        self.score_label = Text((45,30),"scr: " + str(self.level_score.score),20,self.screen_color,self.display_group)
         
     def get_event(self, event):
         #print(event)
@@ -199,27 +200,37 @@ class Gameplay(GameState):
                 self.player.control(CONTROLS[event.key], -1)
                 
     def update(self, dt):
-        if (self.player.rect.left > WIDTH * 0.7 and self.player.xVel > 0) or (
-                self.player.rect.right < WIDTH * 0.3 and self.player.xVel < 0):
-            for obstacle in self.sprite_group:
-                obstacle.rect.left -= int(self.player.xVel)
+        if not PERSISTENT["level_complete"] and self.level_score.score > 0:
+            if (self.player.rect.left > WIDTH * 0.7 and self.player.xVel > 0) or (
+                    self.player.rect.right < WIDTH * 0.3 and self.player.xVel < 0):
+                for sprite in self.sprite_group:
+                    sprite.rect.left -= int(self.player.xVel)
 
-        self.obstacle_group.update()
-        self.player.update(self.obstacle_group)
-        #print(self.player.rect.center)
-        # self.rect.move_ip(self.x_velocity, 0)
-        # if (self.rect.right > self.screen_rect.right
-        #     or self.rect.left < self.screen_rect.left):
-        #     self.x_velocity *= -1
-        #     self.rect.clamp_ip(self.screen_rect)
-        if dt > 17:
-            print(dt)
+            #reduce score by dt
+            if PERSISTENT["coin_collected"] == True:
+                PERSISTENT["coin_collected"] = False
+                self.level_score.update_score(500)
+            self.level_score.update_score(int(-dt/3))
+            # print(self.level_score.score)
+
+            self.score_label.update_text("scr: " + str(self.level_score.score))
+            self.display_group.update()
+            self.obstacle_group.update()
+            self.player.update(self.obstacle_group)
+
+        else:
+            PERSISTENT["final_score"] += self.level_score.score
+            print(PERSISTENT["final_score"])
+            self.player.xVel = 0
+            self.player.yVel = 0
+            self.done = True
                  
     def draw(self, surface):
         surface.fill(self.screen_color)
+
         self.sprite_group.draw(surface)
-        # surface.blit(self.title, self.title_rect)
-        # pg.draw.rect(surface, pg.Color("darkgreen"), self.rect)
+        self.display_group.draw(surface)
+
 
 
 class SaveSelect(GameState):
@@ -244,8 +255,9 @@ class LevelLoad(GameState):
         super(LevelLoad,self).__init__()
 
     def startup(self,persistent):
-        level = imgMAP
         self.persist = persistent
+        level = LEVELS[self.persist["next_level"]]
+
         self.obstacle_group = pg.sprite.Group()
         self.persist["obstacle_group"] = self.obstacle_group
 
@@ -277,30 +289,38 @@ class LevelLoad(GameState):
         self.persist["sprite_group"]=self.sprite_group
 
         # After loading the level, the next state will always be GAMEPLAY, Then end the instance
+        self.persist["current_level"] = self.persist["next_level"]
+        self.persist["next_level"] += 1
         self.next_state = "GAMEPLAY"
-        # Set next state to INTRO when Intro is made
         self.done = True
 
 
 class LevelSelect(GameState):
-    def startup(self,persistent):
-        #level = imgMAP
-        self.persist = persistent
-        self.obstacle_group = pg.sprite.Group()
-        self.persist["obstacle_group"] = self.obstacle_group
-        self.overlay_group = pg.sprite.Group()
-
-        # DONT empty the sprite groups!
-        # self.obstacle_group.empty()
-        # self.sprite_group.empty()
     pass
 
 
+
+# TODO Level intro screen
+# TODO Level Over Screen
+# TODO Pause Screen
+# TODO Load/Save system
+# TODO Menus and polish
 class LevelIntro(GameState):
     def __init__(self):
         super(LevelIntro,self).__init__()
-    pass
 
+    def startup(self, persistent):
+        self.persist = persistent
+
+        #self.level_label
+
+    def get_event(self, event):
+        pass
+
+    def update(self, dt):
+        pass
+    def draw(self, surface):
+        pass
 
 class LevelPause(GameState):
     pass
@@ -313,6 +333,7 @@ class EndLevel(GameState):
 # Exits the game by immediately setting the "quit" variable to true
 class Exit(GameState):
     def __init__(self):
+        #kills the game by forcing the game class to break from all of its loops.
         super(Exit, self).__init__()
         self.quit = True
 
