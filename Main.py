@@ -12,9 +12,11 @@ from Player import *
 from Score import *
     
 class Game(object):
-    # The game and its states are controlled through this class. Events are also handled here.
-    # Initialises pygame, sets the first state, initialises the screen etc.
+    # The game, states, and events are handled through this class.
     def __init__(self, screen, states, start_state):
+        # Initialise game variables.
+        # screen is the screen surface, states is a dictionary of all stastes, start_state is the initial state
+        # that runs
         self.done = False
         self.screen = screen
         self.clock = pg.time.Clock()
@@ -105,9 +107,10 @@ class MainMenu(GameState):
         self.button_group = pg.sprite.Group()
 
         # Buttons/UI elements
-        self.new_button = Button((WIDTH/2, 200), (100, 40), "NEW", pg.Color("dodgerblue"), self.sprite_group, "LEVELLOAD")
-        self.load_button = Button((WIDTH/2, 300), (100, 40), "LOAD", pg.Color("dodgerblue"), self.sprite_group, "LOADGAME")
-        self.exit_button = Button((WIDTH/2, 400), (100, 40), "EXIT", pg.Color("dodgerblue"), self.sprite_group, "EXIT")
+        self.new_button = Button((WIDTH/2, 200), (150, 40), "NEW", pg.Color("dodgerblue"), self.sprite_group, "LEVELLOAD")
+        self.load_button = Button((WIDTH/2, 300), (150, 40), "LOAD", pg.Color("dodgerblue"), self.sprite_group, "LOADGAME")
+        self.scores_button = Button((WIDTH/2, 400), (150, 40), "HISCORES", pg.Color("dodgerblue"), self.sprite_group, "HISCORES")
+        self.exit_button = Button((WIDTH/2, 500), (150, 40), "EXIT", pg.Color("red"), self.sprite_group, "EXIT")
 
         for sprite in self.sprite_group:
             self.button_group.add(sprite)
@@ -451,22 +454,25 @@ class EndLevel(GameState):
         super(EndLevel,self).__init__()
 
     def startup(self, persistent):
+        # import persistent dict, initialise sprite groups
         self.persist = persistent
         self.overlay_group = pg.sprite.Group()
         self.button_group = pg.sprite.Group()
 
+        # Screen colour, labels
         self.screen_colour = pg.Color("dodgerblue")
         self.level_label = Text((WIDTH/2, 100), "LEVEL" + str(self.persist["current_level"]), 60, self.screen_colour, self.overlay_group)
         self.score_level = Text((WIDTH/2, 400), "LEVEL SCORE: " + str(GLOBALS["level_scores"][-1]), 40, self.screen_colour, self.overlay_group)
         self.score_total = Text((WIDTH/2, 450), "TOTAL SCORE: " + str(GLOBALS["final_score"]), 40, self.screen_colour, self.overlay_group)
 
-        # Buttons to prompt player to restart level, save and quit
+        # Menu buttons
         self.restart_button = Button((WIDTH/2, 170), (200, 40), "RESTART LEVEL", pg.Color("white"), self.button_group, "RESTART")
         self.next_button =    Button((WIDTH/2, 220), (200, 40), "NEXT LEVEL", pg.Color("white"), self.button_group, "SAVEGAME")
         self.exit_button =    Button((WIDTH/2, 270), (200, 40), "EXIT", pg.Color("white"), self.button_group, "EXIT")
         self.menu_button =    Button((WIDTH/2, 320), (200, 40), "MAIN MENU", pg.Color("white"), self.button_group, "MAINMENU")
 
     def get_event(self, event):
+        #Handle mouse events
         if event.type == pg.QUIT:
             self.quit = True
         elif event.type == pg.MOUSEBUTTONDOWN:
@@ -475,9 +481,8 @@ class EndLevel(GameState):
                     if button.clicked() in states:
                         self.next_state = button.clicked()
                         self.done = True
-
                     else:
-                        # set next level to start of prev level, restart level
+                        # If restart is clicked set next level to start of prev level, restart level
                         if button.clicked() == "RESTART":
                             GLOBALS["final_score"] -= GLOBALS["level_scores"][-1]
                             GLOBALS["level_scores"][-1] = 0
@@ -486,6 +491,7 @@ class EndLevel(GameState):
                             self.done = True
 
     def update(self, dt):
+        # Update the button groups
         self.button_group.update()
         self.overlay_group.update()
 
@@ -494,11 +500,14 @@ class EndLevel(GameState):
         self.button_group.draw(surface)
         self.overlay_group.draw(surface)
 
+# Displays a screen showing hiscores to the player when they finish the game
 class HighScores(GameState):
     def __init__(self):
+        #Inherit from GameState class
         super(HighScores, self).__init__()
 
     def startup(self, persistent):
+        # Import persistent dict and initialise sprite groups, screen colour
         self.persist = persistent
         self.button_group = pg.sprite.Group()
         self.label_group = pg.sprite.Group()
@@ -507,6 +516,7 @@ class HighScores(GameState):
         # buttons/labels
         self.exit_button = Button((WIDTH - 100, 500), (100, 40), "EXIT", pg.Color("white"), self.button_group, "EXIT")
         self.menu_button = Button((100, 500), (100, 40), "MAIN", pg.Color("white"), self.button_group, "MAINMENU")
+        self.new_button = Button((WIDTH/2, 500), (150, 40), "NEW GAME", pg.Color("green"), self.button_group, "LEVELLOAD")
         self.title_label = Text((WIDTH/2,50), "HIGH SCORES", 80, self.screen_colour, self.label_group)
 
         # Load scores to the labels
@@ -517,19 +527,28 @@ class HighScores(GameState):
         if event.type == pg.QUIT:
             self.quit = True
             self.done = True
-        # Button events
+
+        # Handles button input
         if event.type == pg.MOUSEBUTTONDOWN:
             for button in self.button_group:
                 if button.if_hovered():
                     if button.clicked() in states:
                         self.next_state = button.clicked()
+
+                        # if the new-game button is clicked, start from level 1
+                        if self.next_state == "LEVELLOAD":
+                            self.persist["next_level"] = 1
+                            GLOBALS["final_score"] = 0
+                            GLOBALS["level_scores"][:] = []
                         self.done = True
 
     def update(self, dt):
+        # Update the button/labels
         self.button_group.update()
         self.label_group.update()
 
     def draw(self, surface):
+        # Draw the elements to the screen
         screen.fill(self.screen_colour)
         self.button_group.draw(surface)
         self.label_group.draw(surface)
@@ -540,36 +559,38 @@ class HighScores(GameState):
 
         with open(HISCOREFILE, 'r') as f:
             hiscores = f.read().splitlines()
-            
+
+        # Copy, by value, the hiscores list to a new list
         score_string = hiscores[:]
 
+        # If the score is on the hiscores list, insert it in the correct place on the list
         for i in range(0, len(score_string)):
             if final_score > int(score_string[i]):
-                score_string.insert(i, str(final_score) + "*NEW*")
+                # Append "new" to the score to indicate that it's a new score
+                score_string.insert(i, str(final_score) + " *NEW*")
                 hiscores.insert(i, final_score)
+                # slice the lists back down to size, then break from the loop
                 score_string = score_string[:5]
                 hiscores = hiscores[:5]
                 break
 
+        # All the boxes will have the same text size, so just define it here to save time
         text_size = 40
 
+        # In Descending order, load the hiscore buttons with their respective score data
         self.first = Text((WIDTH / 2, 200), "1. {:6}".format(score_string[0]), text_size, pg.Color("white"), self.label_group)
         self.second = Text((WIDTH / 2, 240), "2. {:6}".format(score_string[1]), text_size, pg.Color("white"), self.label_group)
         self.third = Text((WIDTH / 2, 280), "3. {:6}".format(score_string[2]), text_size, pg.Color("white"), self.label_group)
         self.fourth = Text((WIDTH / 2, 320), "4. {:6}".format(score_string[3]), text_size, pg.Color("white"), self.label_group)
         self.fifth = Text((WIDTH / 2, 360), "5. {:6}".format(score_string[4]), text_size, pg.Color("white"), self.label_group)
-        
-        
+
+        # Write the new hiscores to the hiscores file, with one score on each line
         data = []
         for i in hiscores:
-            data.append(i + "\n")
+            data.append(str(i) + "\n")
 
         with open(HISCOREFILE, 'w') as f:
             f.writelines(data)
-
-    
-
-
 
 
 # Quits the game
@@ -580,6 +601,7 @@ class Exit(GameState):
 
 
 if __name__ == "__main__":
+    # Initialise pygame modules
     pg.init()
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     pg.display.set_caption("Platformer v:" + VERSION)
@@ -597,9 +619,11 @@ if __name__ == "__main__":
         "EXIT": Exit,
         "HISCORES": HighScores
     }
-    
+
     # Create instance of the Game class, setting its initial state to the Main Menu
     game = Game(screen, states, "MAINMENU")
     game.run()
+
+    # When execution is complete, close the game
     pg.quit()
     sys.exit()
