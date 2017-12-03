@@ -45,8 +45,9 @@ class Button(pg.sprite.Sprite):
     def clicked(self):
         return self.click_state
 
-class Text(pg.sprite.Sprite):
 
+class Text(pg.sprite.Sprite):
+    # Initialise variables/properties
     def __init__(self, pos, text, text_size, colour ,sprite_group):
         pg.sprite.Sprite.__init__(self)
         self.text = text
@@ -62,11 +63,12 @@ class Text(pg.sprite.Sprite):
         self.colour = colour
         sprite_group.add(self)
 
+
     def update(self):
         self.image.fill(self.colour)
         self.image.blit(self.text_surface,(0,0))
 
-    #update text? how?
+    # Update text
     def update_text(self, text):
         self.text = text
         self.text_surface = self.font.render(self.text, True, BLACK)

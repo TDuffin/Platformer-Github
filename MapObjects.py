@@ -80,9 +80,8 @@ class Coin(Obstacle):
 
     def collisionBehaviour(self,player,axis,fallThrough):
         #ignore WHERE it collided, just run collision code
-        print("collision with coin")
         pg.sprite.Sprite.kill(self)
-        PERSISTENT["coin_collected"] = True
+        GLOBALS["coin_collected"] = True
 
 
 class Start(Obstacle):
@@ -103,9 +102,7 @@ class Goal(Obstacle):
 
     def collisionBehaviour(self, player, axis, fallThrough):
         pg.sprite.Sprite.kill(self)
-
-        print("GOAL")
-        PERSISTENT["level_complete"] = True
+        GLOBALS["level_complete"] = True
 
 ###
 

@@ -8,8 +8,8 @@ class Player(pg.sprite.Sprite):
     yVel = 0
     xVel = 0
     maxYVel = MAXFALLSPEED
-    prevCollisions = []
     fallThrough = False
+
 
     def __init__(self,startPos):
         pg.sprite.Sprite.__init__(self)
@@ -17,6 +17,7 @@ class Player(pg.sprite.Sprite):
         self.image = pg.transform.scale(self.image, (20, 20))
         self.rect = self.image.get_rect()
         self.rect.topleft = startPos
+        print("NEW PLAYER")
 
     def update(self,obstacles):
         if self.yVel < self.maxYVel:
@@ -26,18 +27,20 @@ class Player(pg.sprite.Sprite):
         self.rect.y += self.yVel
         self.collisionCheck(obstacles,1,self.fallThrough)
 
-    def control(self,control,modifier):
-        #keys = pg.mouse.get_pressed()
+    def control(self, control, modifier):
         self.fallThrough = False
-        if control == "JUMP" and modifier == 1 and self.jumpsLeft > 0:
+
+        if control == "JUMP" and self.jumpsLeft > 0 and modifier == 1:
             self.yVel = -JUMPHEIGHT
             self.jumpsLeft -= 1
         elif control == "RIGHT":
             self.xVel += RUNSPEED * modifier
         elif control == "LEFT":
             self.xVel -= RUNSPEED * modifier
+
         elif control == "FALL" and modifier == 1:
             self.fallThrough = True
+
 
     # 0 for x axis col.check, 1 for y axis col.check
     def collisionCheck(self,group,axis,fallThrough):
